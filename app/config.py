@@ -1,32 +1,23 @@
 import os
 from dotenv import load_dotenv
 
-# Only load .env if it exists (for local development)
+# Load .env only for local development
 if os.path.exists('.env'):
     load_dotenv()
 
-# Database URI: Use DATABASE_URL (Railway PostgreSQL), fallback to SQLite
+# Get DATABASE_URL from environment (injected by Railway)
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-# Always use DATABASE_URL if available, it means we're on Railway
-if DATABASE_URL:
-    # Railway PostgreSQL
+# Production (Railway): Use DATABASE_URL for PostgreSQL
+# Development (Local): Use SQLite
+if DATABASE_URL and ('postgresql' in DATABASE_URL or 'postgres' in DATABASE_URL):
+    # Railway PostgreSQL connection
     db_uri = DATABASE_URL
-    # Fix postgres:// to postgresql:// for SQLAlchemy compatibility
     if db_uri.startswith('postgres://'):
         db_uri = db_uri.replace('postgres://', 'postgresql://', 1)
 else:
-    # Local development: SQLite
-    try:
-        instance_path = os.path.abspath(r'C:\Users\yeini\.villa_lisanna_tmp')
-        os.makedirs(instance_path, exist_ok=True)
-        db_file_path = os.path.join(instance_path, 'villalisanna.db')
-        if not os.path.exists(db_file_path):
-            open(db_file_path, 'a').close()
-        db_uri = f'sqlite:///{db_file_path.replace(chr(92), "/")}'
-    except:
-        # Fallback if path creation fails
-        db_uri = 'sqlite:///./villalisanna.db'
+    # Local SQLite fallback
+    db_uri = 'sqlite:///./villalisanna.db'
 
 class Config:
     SQLALCHEMY_DATABASE_URI = db_uri
