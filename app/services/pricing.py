@@ -56,14 +56,7 @@ class PricingService:
             nightly_rate = offer.nightly_rate
             offer_name = offer.name
         else:
-            if nights == 2:
-                nightly_rate = config.rate_2_nights
-            elif nights == 3:
-                nightly_rate = config.rate_3_nights
-            elif nights >= 4:
-                nightly_rate = config.rate_4plus_nights
-            else:
-                nightly_rate = config.nightly_rate
+            nightly_rate = config.nightly_rate
             offer_name = None
 
         subtotal = (nightly_rate * nights) + config.cleaning_fee
