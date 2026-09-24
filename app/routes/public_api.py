@@ -133,12 +133,8 @@ def create_booking():
         except Exception as stripe_err:
             print(f"[DEBUG] Stripe checkout error: {str(stripe_err)}")
 
-        # Send emails in background (don't wait)
-        try:
-            EmailService.send_booking_confirmation(booking)
-            EmailService.send_admin_notification(booking)
-        except Exception as email_err:
-            print(f"[DEBUG] Email send error: {str(email_err)}")
+        # TODO: Send emails asynchronously in FASE 2
+        # Removed email sending for now due to SMTP timeout issues
 
         return jsonify({
             'success': True,
