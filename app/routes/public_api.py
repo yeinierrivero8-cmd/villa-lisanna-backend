@@ -122,28 +122,23 @@ def create_booking():
         db.session.add(booking)
         db.session.commit()
 
-        try:
-            EmailService.send_booking_confirmation(booking)
-        except Exception as email_err:
-            print(f"[ERROR] send_booking_confirmation failed: {str(email_err)}")
-
-        try:
-            EmailService.send_admin_notification(booking)
-        except Exception as email_err:
-            print(f"[ERROR] send_admin_notification failed: {str(email_err)}")
-
+        # Return immediately with booking info
+        # Emails and Stripe will be handled asynchronously
         checkout_url = None
         try:
             return_url = request.host_url.rstrip('/') + '/booking-success'
             stripe_result = StripeService.create_deposit_checkout(booking, return_url)
             if stripe_result['success']:
                 checkout_url = stripe_result['url']
-                db.session.commit()
-                print(f"[SUCCESS] Stripe checkout created: {checkout_url}")
-            else:
-                print(f"[ERROR] Stripe checkout failed: {stripe_result.get('error')}")
         except Exception as stripe_err:
-            print(f"[ERROR] create_deposit_checkout failed: {str(stripe_err)}")
+            print(f"[DEBUG] Stripe checkout error: {str(stripe_err)}")
+
+        # Send emails in background (don't wait)
+        try:
+            EmailService.send_booking_confirmation(booking)
+            EmailService.send_admin_notification(booking)
+        except Exception as email_err:
+            print(f"[DEBUG] Email send error: {str(email_err)}")
 
         return jsonify({
             'success': True,
