@@ -3,16 +3,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Usar DATABASE_URL si está disponible (Railway PostgreSQL), sino SQLite local
+# Database URI: PostgreSQL en producción (Railway), SQLite en desarrollo
+FLASK_ENV = os.getenv('FLASK_ENV', 'development')
 DATABASE_URL = os.getenv('DATABASE_URL')
 
-if DATABASE_URL:
-    # Railway PostgreSQL
-    db_uri = DATABASE_URL
+if FLASK_ENV == 'production' or DATABASE_URL:
+    # Production: PostgreSQL en Railway
+    db_uri = DATABASE_URL or 'postgresql://localhost/villalisanna'
     if db_uri.startswith('postgres://'):
         db_uri = db_uri.replace('postgres://', 'postgresql://', 1)
 else:
-    # Fallback: SQLite local para desarrollo
+    # Development: SQLite local
     instance_path = os.path.abspath(r'C:\Users\yeini\.villa_lisanna_tmp')
     os.makedirs(instance_path, exist_ok=True)
     db_file_path = os.path.join(instance_path, 'villalisanna.db')
