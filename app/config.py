@@ -1,15 +1,12 @@
 import os
-import sys
 from dotenv import load_dotenv
 
-load_dotenv()
+# Only load .env if it exists (for local development)
+if os.path.exists('.env'):
+    load_dotenv()
 
 # Database URI: Use DATABASE_URL (Railway PostgreSQL), fallback to SQLite
 DATABASE_URL = os.getenv('DATABASE_URL')
-
-# Debug logging
-print(f"DEBUG: DATABASE_URL = {DATABASE_URL[:50] if DATABASE_URL else 'NOT SET'}", file=sys.stderr)
-print(f"DEBUG: All env vars: {list(os.environ.keys())[:10]}", file=sys.stderr)
 
 # Always use DATABASE_URL if available, it means we're on Railway
 if DATABASE_URL:
