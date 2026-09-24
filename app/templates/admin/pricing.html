@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Precios - Villa Lisanna Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #f5f5f5; }
+        nav {
+            background: #2c3e50;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav h1 { font-size: 22px; }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+        }
+        nav a:hover { color: #00E5FF; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .form-card { background: white; padding: 30px; margin-top: 20px; }
+        .form-section { margin-bottom: 30px; }
+        .form-section h2 { font-size: 18px; color: #5B9CA6; margin-bottom: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; }
+        .btn { padding: 12px 24px; background: #5B9CA6; color: white; border: none; }
+        .alert { padding: 15px; margin-bottom: 20px; display: none; }
+        .alert.success { background: #d1fae5; display: block; }
+        .alert.error { background: #fee2e2; display: block; }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>💰 Gestionar Precios</h1>
+        <div>
+            <a href="/admin/bookings">Reservas</a>
+            <a href="/admin/pricing">Precios</a>
+            <a href="/admin/calendar">Calendario</a>
+            <a href="/admin/ofertas">Ofertas</a>
+            <a href="/admin/logout" onclick="event.preventDefault(); fetch('/admin/logout', {method: 'POST'}).then(() => location.href='/admin/login')">Logout</a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="form-card">
+            <div id="alertBox" class="alert"></div>
+            <form id="pricingForm">
+                <div class="form-section">
+                    <h2>Precios por Noche</h2>
+                    <input type="number" id="nightly_rate" name="nightly_rate" step="0.01" placeholder="Tarifa base" required>
+                    <div class="form-row">
+                        <input type="number" id="rate_2_nights" name="rate_2_nights" step="0.01" placeholder="2 noches" required>
+                        <input type="number" id="rate_3_nights" name="rate_3_nights" step="0.01" placeholder="3 noches" required>
+                    </div>
+                    <input type="number" id="rate_4plus_nights" name="rate_4plus_nights" step="0.01" placeholder="4+ noches" required>
+                </div>
+                <div class="form-section">
+                    <h2>Tarifas</h2>
+                    <input type="number" id="cleaning_fee" name="cleaning_fee" step="0.01" placeholder="Limpieza" required>
+                    <input type="number" id="damage_deposit" name="damage_deposit" step="0.01" placeholder="Depósito" required>
+                    <input type="number" id="sales_tax_rate" name="sales_tax_rate" step="0.01" placeholder="Impuestos %" required>
+                </div>
+                <button type="submit" class="btn">Guardar</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        fetch('/admin/api/pricing').then(r=>r.json()).then(p=>{Object.keys(p).forEach(k=>{const i=document.getElementById(k);if(i)i.value=p[k];})});
+        document.getElementById('pricingForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const d = Object.fromEntries(new FormData(e.target));
+            const r = await fetch('/admin/api/pricing', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+            const res = await r.json();
+            const a = document.getElementById('alertBox');
+            a.textContent = res.success ? 'Precios actualizados' : 'Error';
+            a.className = 'alert ' + (res.success ? 'success' : 'error');
+        });
+    </script>
+</body>
+</html>
