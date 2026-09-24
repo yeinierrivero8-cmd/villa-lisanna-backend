@@ -1,26 +1,11 @@
 import os
 from dotenv import load_dotenv
 
-# Load .env only for local development
-if os.path.exists('.env'):
-    load_dotenv()
-
-# Get DATABASE_URL from environment (injected by Railway)
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-# Production (Railway): Use DATABASE_URL for PostgreSQL
-# Development (Local): Use SQLite
-if DATABASE_URL and ('postgresql' in DATABASE_URL or 'postgres' in DATABASE_URL):
-    # Railway PostgreSQL connection
-    db_uri = DATABASE_URL
-    if db_uri.startswith('postgres://'):
-        db_uri = db_uri.replace('postgres://', 'postgresql://', 1)
-else:
-    # Local SQLite fallback
-    db_uri = 'sqlite:///./villalisanna.db'
+load_dotenv()
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = db_uri
+    # SQLite database - works everywhere
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///villalisanna.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
