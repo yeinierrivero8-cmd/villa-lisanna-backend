@@ -3,21 +3,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Usar ruta absoluta fija (Windows) - Temporal: C:\ para estabilidad de SQLite
-# TODO: Cambiar de vuelta a E:\ cuando se resuelva el problema de I/O en discos externos
-instance_path = os.path.abspath(r'C:\Users\yeini\.villa_lisanna_tmp')
-os.makedirs(instance_path, exist_ok=True)
+# Usar DATABASE_URL si está disponible (Railway PostgreSQL), sino SQLite local
+DATABASE_URL = os.getenv('DATABASE_URL')
 
-# Crear archivo de BD
-db_file_path = os.path.join(instance_path, 'villalisanna.db')
-
-# Asegurarse de que el archivo existe
-if not os.path.exists(db_file_path):
-    open(db_file_path, 'a').close()
+if DATABASE_URL:
+    # Railway PostgreSQL
+    db_uri = DATABASE_URL
+    if db_uri.startswith('postgres://'):
+        db_uri = db_uri.replace('postgres://', 'postgresql://', 1)
+else:
+    # Fallback: SQLite local para desarrollo
+    instance_path = os.path.abspath(r'C:\Users\yeini\.villa_lisanna_tmp')
+    os.makedirs(instance_path, exist_ok=True)
+    db_file_path = os.path.join(instance_path, 'villalisanna.db')
+    if not os.path.exists(db_file_path):
+        open(db_file_path, 'a').close()
+    db_uri = f'sqlite:///{db_file_path.replace(chr(92), "/")}'
 
 class Config:
-    # SQLite con ruta absoluta en formato Windows
-    SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_file_path.replace(chr(92), "/")}'
+    SQLALCHEMY_DATABASE_URI = db_uri
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
